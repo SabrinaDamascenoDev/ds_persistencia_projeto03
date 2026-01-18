@@ -23,6 +23,7 @@ async def get_users(user_id: PydanticObjectId) -> UsuarioRead:
     return UsuarioRead
 
 @router.post("/", response_model=Usuario)
-async def create_user(user: Usuario) -> Usuario:
-    await user.insert()
-    return user
+async def create_user(user: UsuarioCreate) -> Usuario:
+    novo_usuario = Usuario(**user.model_dump())
+    await novo_usuario.insert()
+    return novo_usuario
