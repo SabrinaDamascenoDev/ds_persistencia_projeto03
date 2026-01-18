@@ -26,41 +26,7 @@ class Compras(Document):
         """
         name = "compras"
 
-    @property
-    def usuario_id(self) -> PydanticObjectId | None:
-        """
-        Retorna o ID do usuário associado à compra.
 
-        - Se o link já foi resolvido (`fetch_link`), retorna `usuario.id`
-        - Se ainda for apenas um ObjectId, retorna diretamente
-        - Caso não exista, retorna None
-        """
-        u = getattr(self, "usuario", None)
-        if u is None:
-            return None
-        if hasattr(u, "id"):
-            return u.id
-        if isinstance(u, PydanticObjectId):
-            return u
-        return None
-
-    @property
-    def livro_id(self) -> PydanticObjectId | None:
-        """
-        Retorna o ID do livro associado à compra.
-
-        - Se o link já foi resolvido (`fetch_link`), retorna `livro.id`
-        - Se ainda for apenas um ObjectId, retorna diretamente
-        - Caso não exista, retorna None
-        """
-        l = getattr(self, "livro", None)
-        if l is None:
-            return None
-        if hasattr(l, "id"):
-            return l.id
-        if isinstance(l, PydanticObjectId):
-            return l
-        return None
 
 
 class CompraCreate(BaseModel):

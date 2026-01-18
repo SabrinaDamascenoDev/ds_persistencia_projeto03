@@ -3,35 +3,41 @@ from beanie.odm.fields import PydanticObjectId
 from fastapi_pagination import Page, paginate
 from models.livro import Livro, LivroCreate, LivroRead, LivroUpdate
 from models.admin import Admin
+from models.compras import Compras
+
 
 router = APIRouter(
     prefix="/livros",
     tags=["Livros"]
 )
 
-
-@router.get("/", response_model=Page[LivroRead])
-async def get_livros(genero: str | None = Query(None)):
+@router.get("/", response_model=Page[Livro])
+async def get_livros(
+    genero: str | None = Query(None),
+    page: int = Query(1, ge=1, description="Número da página"),
+    size: int = Query(10, ge=1, le=100, description="Itens por página"),
+):
     """
-    Lista livros com paginação e filtro opcional por gênero.
-
-    Os dados do admin responsável pelo livro são resolvidos manualmente
-    utilizando `fetch_link`, pois o retorno é convertido para um schema
-    de leitura (`LivroRead`).
+    Lista livros com paginação manual (skip/limit).
     """
-    query = Livro.find_all()
+    
+    query = Livro.find_all(fetch_links=True)
 
     if genero:
         query = query.find(Livro.genero == genero)
 
-    livros = await query.to_list()
+    total = await query.count()
+    skip = (page - 1) * size
 
-    for livro in livros:
-        await livro.fetch_link("admin")
+    livros_encontrados = await query.skip(skip).limit(size).to_list()
 
-    livros_read = [LivroRead.model_validate(livro) for livro in livros]
-
-    return paginate(livros_read)
+    return {
+        "items": [Livro.model_validate(livro) for livro in livros_encontrados],
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size
+    }
 
 
 @router.get("/{livro_id}", response_model=LivroRead)
@@ -39,12 +45,12 @@ async def get_livro(livro_id: PydanticObjectId):
     """
     Retorna os dados de um livro específico pelo ID.
     """
-    livro = await Livro.get(livro_id)
+    livro = await Livro.get(livro_id, fetch_links=True)
     if not livro:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
 
-    await livro.fetch_link("admin")
     return LivroRead.model_validate(livro)
+
 
 
 @router.post("/", response_model=LivroRead, status_code=201)
@@ -98,8 +104,6 @@ async def delete_livro(livro_id: PydanticObjectId):
     livro = await Livro.get(livro_id)
     if not livro:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
-
-    from models.compras import Compras
 
     await Compras.find(Compras.livro.id == livro_id).delete()
 

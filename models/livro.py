@@ -60,26 +60,6 @@ class Livro(Document):
         """
         name = "livro"
 
-    @property
-    def admin_id(self) -> PydanticObjectId | None:
-        """
-        Retorna o ID do administrador associado ao livro.
-
-        - Se o link já foi resolvido (`fetch_link`), retorna `admin.id`
-        - Se o campo ainda for apenas um ObjectId, retorna diretamente
-        - Caso não exista, retorna None
-
-        Essa propriedade facilita a interoperabilidade entre
-        Document e schemas Pydantic.
-        """
-        admin = getattr(self, "admin", None)
-        if admin is None:
-            return None
-        if hasattr(admin, "id"):
-            return admin.id
-        if isinstance(admin, (PydanticObjectId, str)):
-            return admin
-        return None
 
 
 class LivroRead(BaseModel):

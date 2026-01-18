@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from beanie.odm.fields import PydanticObjectId
 from fastapi_pagination import Page
 from fastapi_pagination.ext.beanie import apaginate
+from models.compras import Compras
 from models.usuario import Usuario, UsuarioCreate, UsuarioRead
 from beanie.operators import RegEx
 import re
@@ -83,6 +84,9 @@ async def delete_user(user_id: PydanticObjectId):
     user = await Usuario.get(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
+    
+    await Compras.find(Compras.usuario.id == user_id).delete()
     await user.delete()
+   
+
     return None

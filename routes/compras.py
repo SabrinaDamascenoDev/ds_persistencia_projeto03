@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from beanie.odm.fields import PydanticObjectId
-from fastapi_pagination import Page
+from fastapi_pagination import Page, paginate
 from fastapi_pagination.ext.beanie import apaginate
 
 from models.compras import Compras, CompraCreate, CompraRead, CompraUpdate
@@ -13,43 +13,43 @@ router = APIRouter(
     tags=["Compras"]
 )
 
+from fastapi import APIRouter, HTTPException, Query
+from beanie.odm.fields import PydanticObjectId
+from typing import List
+from models.compras import Compras, CompraCreate, CompraRead, CompraUpdate
+from models.usuario import Usuario
+from models.livro import Livro
 
-@router.get("/", response_model=Page[CompraRead])
+router = APIRouter(
+    prefix="/compras",
+    tags=["Compras"]
+)
+
+
+@router.get("/", response_model=Page[Compras])
 async def get_compras(
-    usuario_id: PydanticObjectId | None = Query(None),
-    livro_id: PydanticObjectId | None = Query(None),
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
 ):
     """
-    Lista compras com paginação e filtros opcionais.
+    Lista compras com paginação.
 
-    Permite filtrar as compras por:
-    - usuário (`usuario_id`)
-    - livro (`livro_id`)
-
-    Os relacionamentos (`usuario` e `livro`) são resolvidos antes da
-    conversão para o schema de leitura.
+    Os relacionamentos (`usuario` e `livro`) são resolvidos automaticamente
+    com `fetch_links=True`.
     """
-    query = Compras.find_all()
+    skip = (page - 1) * size
 
-    if usuario_id:
-        query = query.find(Compras.usuario.id == usuario_id)
+    compras = await Compras.find_all(fetch_links=True).skip(skip).limit(size).to_list()
 
-    if livro_id:
-        query = query.find(Compras.livro.id == livro_id)
+    total = await Compras.count()
 
-    async def transformer(items):
-        """
-        Resolve os links do Beanie antes de serializar para o schema
-        de leitura (`CompraRead`).
-        """
-        out = []
-        for compra in items:
-            await compra.fetch_link("usuario")
-            await compra.fetch_link("livro")
-            out.append(CompraRead.model_validate(compra))
-        return out
-
-    return await apaginate(query, transformer=transformer)
+    return {
+        "items": [Compras.model_validate(c) for c in compras], 
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size
+    }
 
 
 @router.get("/{compra_id}", response_model=CompraRead)
@@ -59,13 +59,7 @@ async def get_compra(compra_id: PydanticObjectId):
 
     Resolve os relacionamentos de usuário e livro antes da resposta.
     """
-    compra = await Compras.get(compra_id)
-    if not compra:
-        raise HTTPException(status_code=404, detail="Compra não encontrada")
-
-    await compra.fetch_link("usuario")
-    await compra.fetch_link("livro")
-
+    compra = await Compras.get(compra_id, fetch_links=True)
     return CompraRead.model_validate(compra)
 
 
@@ -108,6 +102,7 @@ async def create_compra(compra_in: CompraCreate):
 
     await compra.fetch_link("usuario")
     await compra.fetch_link("livro")
+    await compra.livro.fetch_link("admin") 
 
     return CompraRead.model_validate(compra)
 
@@ -153,6 +148,7 @@ async def update_compra(compra_id: PydanticObjectId, compra_in: CompraUpdate):
 
     await compra.fetch_link("usuario")
     await compra.fetch_link("livro")
+    await compra.livro.fetch_link("admin")
 
     return CompraRead.model_validate(compra)
 
