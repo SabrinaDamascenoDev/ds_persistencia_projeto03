@@ -36,7 +36,7 @@ Projeto backend desenvolvido com **FastAPI**, **Beanie (ODM)** e **MongoDB**, ut
 Como instalar o uv
 
 Caso não tenha o uv instalado, execute:
-Bash
+
 
 # MacOS / Linux
 ```bash
@@ -56,7 +56,26 @@ git clone https://github.com/SabrinaDamascenoDev/ds-persistencia-projeto03.git
 cd ds-persistencia-projeto03
 ```
 
-# 2. Instale as dependências
+# 2. Crie o Ambiente Virtual
+
+Gere a pasta .venv usando o comando:
+```bash
+uv venv --python 3.12
+```
+
+# 3. Ative o Ambiente Virtual
+
+Antes de instalar as dependências, ative o ambiente:
+
+Windows (PowerShell):
+```bash
+.venv\Scripts\activate
+```
+Linux / macOS:
+```bash
+source .venv/bin/activate
+```
+# 4. Instale as dependências
 
 O uv criará o ambiente virtual e baixará as bibliotecas automaticamente:
 
