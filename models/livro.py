@@ -31,8 +31,7 @@ class LivroRead(BaseModel):
     genero: str | None = None
     quantidade_estoque: int | None = None
     preco_uni: float | None = None
-    
-    model_config = { "from_attributes": True }
+    admin_id: PydanticObjectId | None = None
 
 class Livro(Document):
     titulo: str | None = None
@@ -42,11 +41,11 @@ class Livro(Document):
     genero: str | None = None
     quantidade_estoque: int | None = None
     preco_uni: float | None = None
-    
+
     admin: Link[Admin] 
+    
+
 
     class Settings:
         name = "livro"
 
-from models.admin import AdminComLivros
-AdminComLivros.model_rebuild()

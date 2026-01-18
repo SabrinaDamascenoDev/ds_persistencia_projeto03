@@ -12,14 +12,7 @@ router = APIRouter(
 
 @router.get("/", response_model=Page[Livro])
 async def get_livros() -> Page[Livro]:
-    return await apaginate(Livro.find_all())
-
-@router.get("/{livro_id}", response_model=Livro)
-async def get_livro(livro_id: PydanticObjectId) -> Livro:
-    livro = await Livro.get(livro_id, fetch_links=True)
-    if not livro:
-        raise HTTPException(status_code=404, detail="Livro não encontrado.")
-    return livro
+    return await apaginate(Livro.find_all(), fetch_links=True)
 
 @router.post("/", response_model=LivroRead)
 async def create_livro(livro_input: LivroCreate):
@@ -29,18 +22,32 @@ async def create_livro(livro_input: LivroCreate):
 
     livro = Livro(
         **livro_input.model_dump(exclude={"admin_id"}),
-        admin=admin
+        admin=admin 
     )
     await livro.insert()
 
+
     return LivroRead(
-        id=livro.id,
-        titulo=livro.titulo,
-        autor=livro.autor,
-        quantidade_paginas=livro.quantidade_paginas,
-        editora=livro.editora,
-        genero=livro.genero,
-        quantidade_estoque=livro.quantidade_estoque,
-        preco_uni=livro.preco_uni,
+        **livro.model_dump(),
         admin_id=admin.id
     )
+
+@router.get("/{livro_id}", response_model=Livro)
+async def get_livro(livro_id: PydanticObjectId):
+    livro = await Livro.get(livro_id, fetch_links=True)
+    if not livro:
+        raise HTTPException(status_code=404, detail="Livro não encontrado.")
+    return livro
+
+@router.delete("/{livro_id}", status_code=204)
+async def delete_livro(livro_id: PydanticObjectId):
+    livro = await Livro.get(livro_id)
+    if not livro:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+
+    from models.compras import Compras
+    await Compras.find(Compras.livro.id == livro_id).delete()
+
+    await livro.delete()
+    
+    return None

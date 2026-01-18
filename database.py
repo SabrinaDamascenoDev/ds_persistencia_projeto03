@@ -32,6 +32,7 @@ async def init_db():
         document_models=[Usuario, Admin, Livro, Compras]
     )
 
+
 async def close_db():
     global _client
     if _client is not None:
