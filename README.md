@@ -52,7 +52,7 @@ powershell -c "irm [https://astral.sh/uv/install.ps1](https://astral.sh/uv/insta
 # ⚙️ Instalação e Configuração
 1. Clone o repositório
 ```bash
-git clone https://github.com/SabrinaDamascenoDev/ds-persistencia-projeto03.git
+git clone https://github.com/SabrinaDamascenoDev/ds_persistencia_projeto03
 cd ds-persistencia-projeto03
 ```
 
