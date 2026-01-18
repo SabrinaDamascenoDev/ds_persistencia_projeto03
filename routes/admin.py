@@ -2,7 +2,6 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from beanie import PydanticObjectId
 from fastapi_pagination import Page, paginate
-from fastapi_pagination.ext.beanie import apaginate
 from models.admin import Admin, AdminCreate, AdminUpdate
 
 router = APIRouter(
@@ -16,6 +15,7 @@ async def get_admins():
     Lista admins com paginação.
     """
     query = Admin.find_all(fetch_links=True)
+
     return await paginate(query)
 
 @router.get("/{admin_id}", response_model=Admin)

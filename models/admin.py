@@ -1,4 +1,4 @@
-from beanie import Document, Link
+from beanie import Document, Link, PydanticObjectId
 from pydantic import BaseModel, Field, EmailStr
 
 class AdminCreate(BaseModel):
@@ -9,6 +9,11 @@ class AdminUpdate(BaseModel):
     nome: str | None = Field(None, min_length=1)
     email: EmailStr | None = None
 
+class AdminBasic(BaseModel):
+    id: PydanticObjectId
+    nome: str | None = None
+    email: str | None = None
+    model_config = { "from_attributes": True }
     
 class Admin(Document):
     nome: str | None = None

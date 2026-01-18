@@ -2,7 +2,7 @@ from beanie import Document, Link
 from beanie.odm.fields import PydanticObjectId
 from pydantic import BaseModel, Field
 from models.usuario import Usuario
-from models.livro import Livro
+from models.livro import Livro, LivroRead
 
 
 class Compras(Document):
@@ -49,8 +49,8 @@ class CompraUpdate(BaseModel):
 
 class CompraRead(BaseModel):
     id: PydanticObjectId | None = None
-    usuario_id: PydanticObjectId | None = None
-    livro_id: PydanticObjectId | None = None
+    usuario: Usuario | None = None
+    livro: LivroRead | None = None
     quantidade: int | None = None
     preco_total: float | None = None
 

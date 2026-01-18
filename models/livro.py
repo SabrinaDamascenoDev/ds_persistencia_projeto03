@@ -1,7 +1,7 @@
 from beanie import Document, Link
 from beanie.odm.fields import PydanticObjectId
 from pydantic import BaseModel
-from models.admin import Admin 
+from models.admin import Admin, AdminBasic
 
 class LivroCreate(BaseModel):
     titulo: str | None = None
@@ -32,6 +32,8 @@ class Livro(Document):
     preco_uni: float | None = None
 
     admin: Link[Admin] 
+
+    
     
     class Settings:
         name = "livro"
@@ -46,10 +48,8 @@ class Livro(Document):
         admin = getattr(self, "admin", None)
         if admin is None:
             return None
-        # Admin document carregado
         if hasattr(admin, "id"):
             return admin.id
-        # já é um ObjectId / string
         if isinstance(admin, (PydanticObjectId, str)):
             return admin
         return None
@@ -63,9 +63,8 @@ class LivroRead(BaseModel):
     genero: str | None = None
     quantidade_estoque: int | None = None
     preco_uni: float | None = None
-    admin_id: PydanticObjectId | None = None
+    admin: AdminBasic | None = None
 
-    # permite criar o schema a partir de atributos do Document (bom padrão)
     model_config = {
         "from_attributes": True,
     }

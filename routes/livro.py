@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from beanie.odm.fields import PydanticObjectId
-from fastapi_pagination import Page
-from fastapi_pagination.ext.beanie import paginate
+from fastapi_pagination import Page, paginate
 from models.livro import Livro, LivroCreate, LivroRead, LivroUpdate
 from models.admin import Admin
 
@@ -10,31 +9,23 @@ router = APIRouter(
     tags=["Livros"]
 )
 
+from fastapi_pagination import Page, paginate
+
 @router.get("/", response_model=Page[LivroRead])
 async def get_livros(genero: str | None = Query(None)):
-    """
-    Lista livros com paginação e filtro opcional por gênero.
-    Resolve explicitamente links (fetch_link) antes de converter para o schema de leitura.
-    """
     query = Livro.find_all()
 
     if genero:
         query = query.find(Livro.genero == genero)
 
-    async def transformer(livros):
-        out = []
-        for livro in livros:
-            # resolve o link do admin para garantir que Livro.admin seja o documento Admin
-            try:
-                await livro.fetch_link("admin")
-            except Exception:
-                # se não conseguir resolver, mantemos o estado atual (será tratado pelo schema)
-                pass
-            # LivroRead usa from_attributes e a propriedade Livro.admin_id
-            out.append(LivroRead.model_validate(livro))
-        return out
+    livros = await query.to_list()
 
-    return await paginate(query, transformer=transformer)
+    for livro in livros:
+        await livro.fetch_link("admin")
+
+    livros_read = [LivroRead.model_validate(livro) for livro in livros]
+
+    return paginate(livros_read)
 
 
 @router.get("/{livro_id}", response_model=LivroRead)
