@@ -1,0 +1,15 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: livraria_db
+      MONGO_INITDB_ROOT_USERNAME: sabrinadamasceno_db_user
+      MONGO_INITDB_ROOT_PASSWORD: nr1umYbg6QQpTp7a
+    restart: unless-stopped
+volumes:
+  mongo_data: 
