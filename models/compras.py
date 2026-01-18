@@ -6,16 +6,35 @@ from models.livro import Livro, LivroRead
 
 
 class Compras(Document):
+    """
+    Documento que representa uma compra realizada por um usuário.
+
+    Cada compra possui:
+    - Um usuário associado
+    - Um livro comprado
+    - Quantidade adquirida
+    - Preço total calculado no momento da compra
+    """
     usuario: Link[Usuario]
     livro: Link[Livro]
     quantidade: int = 1
     preco_total: float | None = None
 
     class Settings:
+        """
+        Configuração da coleção MongoDB.
+        """
         name = "compras"
 
     @property
     def usuario_id(self) -> PydanticObjectId | None:
+        """
+        Retorna o ID do usuário associado à compra.
+
+        - Se o link já foi resolvido (`fetch_link`), retorna `usuario.id`
+        - Se ainda for apenas um ObjectId, retorna diretamente
+        - Caso não exista, retorna None
+        """
         u = getattr(self, "usuario", None)
         if u is None:
             return None
@@ -27,6 +46,13 @@ class Compras(Document):
 
     @property
     def livro_id(self) -> PydanticObjectId | None:
+        """
+        Retorna o ID do livro associado à compra.
+
+        - Se o link já foi resolvido (`fetch_link`), retorna `livro.id`
+        - Se ainda for apenas um ObjectId, retorna diretamente
+        - Caso não exista, retorna None
+        """
         l = getattr(self, "livro", None)
         if l is None:
             return None
@@ -38,16 +64,34 @@ class Compras(Document):
 
 
 class CompraCreate(BaseModel):
+    """
+    Schema utilizado para criação de uma nova compra.
+
+    Recebe apenas os IDs do usuário e do livro,
+    além da quantidade comprada.
+    """
     usuario_id: PydanticObjectId
     livro_id: PydanticObjectId
-    quantidade: int = Field(..., gt=0)
+    quantidade: int = Field(..., gt=0, description="Quantidade de livros comprados")
 
 
 class CompraUpdate(BaseModel):
-    quantidade: int | None = Field(None, gt=0)
+    """
+    Schema utilizado para atualização de uma compra.
+
+    Atualmente permite apenas a atualização da quantidade.
+    """
+    quantidade: int | None = Field(None, gt=0, description="Nova quantidade comprada")
 
 
 class CompraRead(BaseModel):
+    """
+    Schema de leitura de compra.
+
+    Retornado nos endpoints da API, contendo:
+    - Usuário completo
+    - Livro em formato de leitura (`LivroRead`)
+    """
     id: PydanticObjectId | None = None
     usuario: Usuario | None = None
     livro: LivroRead | None = None

@@ -22,6 +22,11 @@ logger = logging.getLogger(__name__)
 _client: AsyncMongoClient | None = None
 
 async def init_db():
+    """
+    Inicializa a conexão com o MongoDB e registra os modelos no Beanie.
+
+    Esta função deve ser chamada no startup da aplicação FastAPI.
+    """
     global _client
     _client = AsyncMongoClient(DATABASE_URL)
     logger.info(f"Using DATABASE_URL: {DATABASE_URL}")
@@ -34,6 +39,12 @@ async def init_db():
 
 
 async def close_db():
+    """
+    Encerra a conexão com o MongoDB.
+
+    Deve ser chamada no shutdown da aplicação FastAPI
+    para liberar corretamente os recursos.
+    """
     global _client
     if _client is not None:
         _client.close()
