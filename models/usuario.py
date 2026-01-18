@@ -1,5 +1,5 @@
 from beanie import Document
-from pydantic import Field
+from beanie.odm.fields import PydanticObjectId
 from pydantic import BaseModel
 
 
@@ -19,9 +19,15 @@ class UsuarioCreate(BaseModel):
     endereco: str | None = None
     telefone: str | None = None
 
+
 class UsuarioRead(BaseModel):
+    id: PydanticObjectId
     nome: str | None = None
     email: str | None = None
     endereco: str | None = None
     telefone: str | None = None
 
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,   
+    }

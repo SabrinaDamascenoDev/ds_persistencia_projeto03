@@ -1,30 +1,59 @@
 from beanie import Document, Link
 from beanie.odm.fields import PydanticObjectId
-from pydantic import Field
-from pydantic import BaseModel
-from models.livro import Livro
+from pydantic import BaseModel, Field
 from models.usuario import Usuario
-from datetime import datetime
+from models.livro import Livro
+
 
 class Compras(Document):
     usuario: Link[Usuario]
     livro: Link[Livro]
-    quantidade_comprados: int = Field(gt=0)
-    preco_pago: float
-    data_compra: datetime = Field(default_factory=datetime.utcnow)
+    quantidade: int = 1
+    preco_total: float | None = None
 
     class Settings:
         name = "compras"
 
-class ComprasCreate(BaseModel):
-    usuario: PydanticObjectId = Field(..., description="ID do Usuário")
-    livro: PydanticObjectId = Field(..., description="ID do Livro")
-    quantidade_comprados: int = Field(gt=0)
-    preco_pago: float
-    data_compra: datetime = Field(default_factory=datetime.utcnow)
+    @property
+    def usuario_id(self) -> PydanticObjectId | None:
+        u = getattr(self, "usuario", None)
+        if u is None:
+            return None
+        if hasattr(u, "id"):
+            return u.id
+        if isinstance(u, PydanticObjectId):
+            return u
+        return None
 
-class ComprasUpdate(BaseModel):
-    usuario: PydanticObjectId = Field(..., description="ID do Usuário")
-    livro: PydanticObjectId = Field(..., description="ID do Livro")
-    quantidade_comprados: int = Field(gt=0)
-    preco_pago: float
+    @property
+    def livro_id(self) -> PydanticObjectId | None:
+        l = getattr(self, "livro", None)
+        if l is None:
+            return None
+        if hasattr(l, "id"):
+            return l.id
+        if isinstance(l, PydanticObjectId):
+            return l
+        return None
+
+
+class CompraCreate(BaseModel):
+    usuario_id: PydanticObjectId
+    livro_id: PydanticObjectId
+    quantidade: int = Field(..., gt=0)
+
+
+class CompraUpdate(BaseModel):
+    quantidade: int | None = Field(None, gt=0)
+
+
+class CompraRead(BaseModel):
+    id: PydanticObjectId | None = None
+    usuario_id: PydanticObjectId | None = None
+    livro_id: PydanticObjectId | None = None
+    quantidade: int | None = None
+    preco_total: float | None = None
+
+    model_config = {
+        "from_attributes": True,
+    }
