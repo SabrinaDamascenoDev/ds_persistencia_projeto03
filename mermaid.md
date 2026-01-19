@@ -1,3 +1,6 @@
+## 📊 Diagrama de Classes
+
+```mermaid
 classDiagram
     class Usuario {
         +PydanticObjectId id
@@ -33,6 +36,6 @@ classDiagram
         +Float preco_total
     }
 
-    Admin &quot;1&quot; --o &quot;*&quot; Livro : cadastra
-    Usuario &quot;1&quot; --o &quot;*&quot; Compras : realiza
-    Livro &quot;1&quot; --o &quot;*&quot; Compras : contido em
+    Admin "1" --o "*" Livro : cadastra
+    Usuario "1" --o "*" Compras : realiza
+    Livro "1" --o "*" Compras : contido em
